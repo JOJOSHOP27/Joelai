@@ -1,68 +1,578 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gemini AI Chat</title>
-<style>
-body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4; }
-.chat-container { width: 400px; height: 600px; background: white; border-radius: 10px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
-.chat-box { flex: 1; padding: 15px; overflow-y: auto; }
-.message { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
-.user { background: #007bff; color: white; align-self: flex-end; }
-.bot { background: #e9e9eb; color: black; align-self: flex-start; }
-.input-area { display: flex; border-top: 1px solid #ddd; }
-input { flex: 1; padding: 10px; border: none; outline: none; }
-button { padding: 10px 15px; border: none; background: #007bff; color: white; cursor: pointer; }
-button:hover { background: #0056b3; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOELL AI1 - Next Gen AI Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0b0f1c, #030514);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .chat-app {
+            width: 100%;
+            max-width: 1300px;
+            height: 90vh;
+            background: rgba(15, 25, 35, 0.65);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-app::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00f0ff, #8a2be2, #ff00c8, #00f0ff);
+            background-size: 400% 400%;
+            border-radius: 3rem;
+            z-index: -2;
+            animation: neonFlow 8s ease infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes neonFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header {
+            padding: 2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a0f0ff, #c084fc, #f9a8d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+
+        .model-badge {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 100px;
+            padding: 0.6rem 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #a0f0ff;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(0,255,255,0.3);
+            border-radius: 10px;
+            box-shadow: 0 0 10px cyan;
+        }
+
+        .message {
+            display: flex;
+            max-width: 80%;
+            animation: messagePop 0.3s ease-out;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            padding: 1.2rem 1.8rem;
+            border-radius: 2rem 2rem 0.5rem 2rem;
+            background: rgba(20, 30, 45, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            color: #e5e9f0;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .bot-message .message-bubble {
+            border-radius: 2rem 2rem 2rem 0.5rem;
+            background: rgba(30, 20, 50, 0.7);
+            border-color: rgba(192, 132, 252, 0.3);
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.2);
+        }
+
+        .message img {
+            max-width: 100%;
+            border-radius: 1.5rem;
+            margin-top: 0.8rem;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .typing {
+            display: flex;
+            gap: 0.6rem;
+            padding: 1.2rem 2rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 3rem;
+            width: fit-content;
+            border: 1px solid rgba(0,255,255,0.2);
+        }
+        .typing span {
+            width: 10px;
+            height: 10px;
+            background: cyan;
+            border-radius: 50%;
+            animation: pulseTyping 1.4s infinite;
+            box-shadow: 0 0 15px cyan;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulseTyping {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        @keyframes messagePop {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .input-area {
+            padding: 1.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: rgba(255,255,255,0.03);
+            border-radius: 3rem;
+            border: 1px solid rgba(0,255,255,0.2);
+            padding: 0.5rem 0.5rem 0.5rem 2rem;
+            display: flex;
+            align-items: flex-end;
+            transition: all 0.3s;
+        }
+        .input-wrapper:focus-within {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0,255,255,0.3);
+        }
+
+        #messageInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            padding: 1rem 0;
+            max-height: 150px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+        #messageInput::placeholder {
+            color: rgba(255,255,255,0.4);
+            font-weight: 300;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .circle-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,255,255,0.3);
+            color: cyan;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .circle-btn:hover {
+            background: rgba(0,255,255,0.2);
+            border-color: cyan;
+            box-shadow: 0 0 20px cyan;
+            transform: scale(1.05);
+        }
+        .circle-btn:active {
+            transform: scale(0.95);
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #00c6ff, #8a2be2);
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            box-shadow: 0 0 30px rgba(138,43,226,0.5);
+            transition: 0.2s;
+        }
+        #sendBtn:hover {
+            box-shadow: 0 0 50px #8a2be2;
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 0.5rem 0 0 2rem;
+        }
+        .preview-item {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid cyan;
+            box-shadow: 0 0 20px cyan;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-preview {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid cyan;
+        }
+    </style>
 </head>
 <body>
+    <div class="chat-app">
+        <div class="header">
+            <div class="logo">
+                <h1>⚡ JOELL AI1</h1>
+            </div>
+            <div class="model-badge">
+                <span>Gemini 1.5 Flash · Multimodal</span>
+            </div>
+        </div>
 
-<div class="chat-container">
-    <div class="chat-box" id="chatBox"></div>
-    <div class="input-area">
-        <input type="text" id="userInput" placeholder="Ketik pesan..." />
-        <button onclick="sendMessage()">Kirim</button>
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+                <div class="message-bubble">
+                    👋 Selamat datang di <strong>JOELL AI1</strong>!<br>
+                    Aku bisa melihat gambar, mendengar suaramu (via teks), dan menjawab pertanyaan.<br>
+                    Coba kirim teks, upload gambar, atau tekan 🎤 untuk bicara.
+                </div>
+            </div>
+        </div>
+
+        <div id="previewArea" class="preview-container"></div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="messageInput" rows="1" placeholder="Ketik pesan..."></textarea>
+                <div class="action-buttons">
+                    <div class="circle-btn" id="micBtn" title="Rekam suara (speech-to-text)">🎤</div>
+                    <div class="circle-btn" id="attachBtn" title="Upload gambar">📷</div>
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                </div>
+            </div>
+            <button class="circle-btn" id="sendBtn">➤</button>
+        </div>
     </div>
-</div>
 
-<script>
-const chatBox = document.getElementById("chatBox");
+    <script>
+        // ==================== KONFIGURASI ====================
+        // API KEY ANDA SUDAH TERISI
+        const GEMINI_API_KEY = 'AIzaSyCLz0ubP1bMmZf_pEh0kMUrp83EQvFTTZ0';
+        const MODEL = 'gemini-1.5-flash';
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-function addMessage(text, sender) {
-    const div = document.createElement("div");
-    div.className = "message " + sender;
-    div.innerText = text;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
+        // ==================== ELEMEN DOM ====================
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const attachBtn = document.getElementById('attachBtn');
+        const fileInput = document.getElementById('fileInput');
+        const previewArea = document.getElementById('previewArea');
 
-async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const message = input.value.trim();
-    if (!message) return;
+        // State: gambar yang dipilih (array of File)
+        let selectedImages = [];
 
-    addMessage(message, "user");
-    input.value = "";
-    addMessage("Mengetik...", "bot");
+        // ==================== SPEECH RECOGNITION ====================
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.continuous = false;
+            recognition.interimResults = false;
 
-    try {
-        const res = await fetch("/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message })
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value += (messageInput.value ? ' ' : '') + transcript;
+                messageInput.style.height = 'auto';
+                messageInput.style.height = messageInput.scrollHeight + 'px';
+            };
+
+            recognition.onerror = (e) => {
+                console.error('Speech error:', e.error);
+                addBotMessage('🎤 Maaf, tidak dapat mendengar. Pastikan mikrofon aktif dan izinkan akses.');
+            };
+        }
+
+        micBtn.addEventListener('click', () => {
+            if (!recognition) {
+                addBotMessage('🎤 Browser tidak mendukung Speech Recognition. Coba gunakan Chrome/Edge.');
+                return;
+            }
+            recognition.start();
+            micBtn.style.background = 'rgba(255,0,100,0.3)';
+            setTimeout(() => micBtn.style.background = '', 1000);
         });
-        const data = await res.json();
-        chatBox.removeChild(chatBox.lastChild);
-        addMessage(data.reply, "bot");
-    } catch (err) {
-        chatBox.removeChild(chatBox.lastChild);
-        addMessage("Terjadi kesalahan", "bot");
-        console.error(err);
-    }
-}
-</script>
 
+        // ==================== ATTACH GAMBAR ====================
+        attachBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (selectedImages.length + files.length > 3) {
+                alert('Maksimal 3 gambar per pesan.');
+                return;
+            }
+
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                selectedImages.push(file);
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.dataset.filename = file.name;
+                    previewItem.innerHTML = `
+                        <img src="${ev.target.result}" alt="preview">
+                        <span class="remove-preview" onclick="removeImage('${file.name}')">✕</span>
+                    `;
+                    previewArea.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            fileInput.value = '';
+        });
+
+        window.removeImage = (filename) => {
+            selectedImages = selectedImages.filter(f => f.name !== filename);
+            const items = document.querySelectorAll('.preview-item');
+            items.forEach(item => {
+                if (item.dataset.filename === filename) item.remove();
+            });
+        };
+
+        // ==================== TAMBAH PESAN KE CHAT ====================
+        function addUserMessage(text, images = []) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', 'user-message');
+
+            let content = `<div class="message-bubble">${escapeHtml(text)}`;
+            if (images.length > 0) {
+                images.forEach(img => {
+                    const imgUrl = URL.createObjectURL(img);
+                    content += `<br><img src="${imgUrl}" alt="user image" style="max-width:200px; border-radius:15px;">`;
+                });
+            }
+            content += '</div>';
+
+            msgDiv.innerHTML = content;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addBotMessage(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', 'bot-message');
+            const formatted = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/```(.*?)```/gs, '<pre>$1</pre>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+            msgDiv.innerHTML = `<div class="message-bubble">${formatted}</div>`;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // ==================== TYPING INDICATOR ====================
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        // ==================== KIRIM PESAN KE GEMINI ====================
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text && selectedImages.length === 0) return;
+
+            addUserMessage(text, selectedImages);
+
+            const parts = [];
+            if (text) parts.push({ text: text });
+
+            for (const file of selectedImages) {
+                const base64 = await fileToBase64(file);
+                parts.push({
+                    inline_data: {
+                        mime_type: file.type,
+                        data: base64.split(',')[1]
+                    }
+                });
+            }
+
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            selectedImages = [];
+            previewArea.innerHTML = '';
+
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            showTyping();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts }],
+                        generationConfig: { temperature: 0.9, maxOutputTokens: 2048 }
+                    })
+                });
+
+                hideTyping();
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                addBotMessage(reply || '🤖 Tidak ada respons.');
+            } catch (error) {
+                hideTyping();
+                console.error(error);
+                let msg = '⚠️ Error: ' + error.message;
+                if (error.message.includes('API key')) {
+                    msg = '🔑 API Key tidak valid. Periksa kembali.';
+                }
+                addBotMessage(msg);
+            } finally {
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
 </body>
 </html>
