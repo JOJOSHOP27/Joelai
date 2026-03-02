@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini AI Chat</title>
+<style>
+body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4; }
+.chat-container { width: 400px; height: 600px; background: white; border-radius: 10px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+.chat-box { flex: 1; padding: 15px; overflow-y: auto; }
+.message { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
+.user { background: #007bff; color: white; align-self: flex-end; }
+.bot { background: #e9e9eb; color: black; align-self: flex-start; }
+.input-area { display: flex; border-top: 1px solid #ddd; }
+input { flex: 1; padding: 10px; border: none; outline: none; }
+button { padding: 10px 15px; border: none; background: #007bff; color: white; cursor: pointer; }
+button:hover { background: #0056b3; }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-box" id="chatBox"></div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Ketik pesan..." />
+        <button onclick="sendMessage()">Kirim</button>
+    </div>
+</div>
+
+<script>
+const chatBox = document.getElementById("chatBox");
+
+function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.className = "message " + sender;
+    div.innerText = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, "user");
+    input.value = "";
+    addMessage("Mengetik...", "bot");
+
+    try {
+        const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        chatBox.removeChild(chatBox.lastChild);
+        addMessage(data.reply, "bot");
+    } catch (err) {
+        chatBox.removeChild(chatBox.lastChild);
+        addMessage("Terjadi kesalahan", "bot");
+        console.error(err);
+    }
+}
+</script>
+
+</body>
+</html>
